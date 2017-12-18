@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+	<title>翻牌子</title>
+	<!--<link href="css/style.css" rel="stylesheet">-->
+	<!--<link href="css/animate.min.css" rel="stylesheet" >-->
+<!--	<link rel="stylesheet" href="css/postbirdAlertBox.css">-->
+
+	<script src="js/jquery-1.9.1.min.js"></script>
+	<script src="js/ydui.flexible.js"></script>
+	<script src="js/ajax.js"></script>
+	<!--<script src="js/postbirdAlertBox.js"></script>-->
+	<style>
+
+		*{padding:0;margin:0}
+		html,body{height:100%;}
+		.clear:after{content:"200B";display:block;font-size:0;height:0;clear:both;}
+		.clear{clear:both;}
+		.hide{display: none}
+
+		body{overflow: hidden;  background: url(images/bg.jpg) no-repeat center;background-size: cover}
+		.bigbox{ perspective: 800px;}
+		/*.bigbox{width:7.0rem;height:7.0rem; position: relative;top:50%;left:50%;
+			margin-top:-3.50rem;margin-left:-3.5rem;}*/
+
+		.pai_list{width:100%;height:100%;/*width:7.0rem;height:4.5rem;*/overflow: hidden ;
+			/*position: absolute;top:50%;left:50%;margin-top:-2.25rem;margin-left:-3.5rem;*/}
+
+		.pai_list .prize {  width: 2rem;  height:2rem;  text-align: center;  cursor: pointer;  }
+
+		.pai_list .prize{position:absolute;top:0;left:0;   border-radius: 10px;
+			background: url(images/prize.jpg) no-repeat center;background-color:#000;background-size: contain }
+
+        .scale{  width: 2rem; height:2rem ; /*left:-50%; top:100%;*/z-index:100;
+			position: absolute;  transform-style: preserve-3d;  perspective: 800px;  cursor: pointer;
+			border-radius:10px
+		}
+
+		.scale .rotate1 {  width:100%;height:100%;
+			position: relative;left: 0;top: 0;
+			background: url(images/0.png) no-repeat center;background-color:deepskyblue;background-size: contain;
+			transform: rotateY(-180deg);
+			border-radius:10px }
+		.scale .rotate2 { width: 100%;  height: 100%;
+			position: absolute;  left: 0;  top: 0;
+			background: url(images/prize.jpg) no-repeat center;background-color:#000;
+			background-size: cover;  border-radius:10px }
+
+		.scale .rotate1 h3{text-align:center;font-size: .32rem;color:#fff;line-height: 2rem;}
+		.scale .rotate1 h3.opacity{animation:opacity 3s ease ; animation-fill-mode: both; }
+
+		.scale.translateZ{  animation: translateZ 2s ease-in-out; }
+		.scale.rotateY{animation: rotateY 1.5s ease-in-out;animation-fill-mode: both;  }
+
+		@-webkit-keyframes translateZ {
+			0% {
+			    transform:translate3d(0,0,0);
+			}
+			50% {
+				transform:translate3d(0,0,100px);
+			}
+			100% {
+				transform:translate3d(0,0,0);
+			}
+		}
+
+		@-webkit-keyframes rotateY {
+			0% {
+				transform: rotateY(0deg);
+			}
+			100% {
+				transform: rotateY(-180deg);
+			}
+		}
+
+		@-webkit-keyframes opacity {
+			0% {
+				opacity:0;
+			}
+			100% {
+				opacity:1;
+			}
+		}
+
+	</style>
+</head>
+<body>
+	<!--<audio id="Jaudio" controls="controls" hidden="hidden" autoplay="autoplay" loop="loop">
+		<source src="./01 - 7obu - Sunburst.mp3" type="audio/mpeg" />
+	</audio>-->
+	<div class="bigbox">
+		<div class="pai_list clear">
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+			<div class="prize"></div>
+		</div>
+	</div>
+
+	<script>
+	//手机调试
+	initConsole();
+	function initConsole(){
+		var js_console = document.createElement('script');
+		js_console.src = './js/vconsole.min.js';
+		document.body.appendChild(js_console);
+		js_console.onload = function () {
+			var vConsole = new VConsole();
+		}
+	}
+
+	//奖品牌排列
+	var prizeList=$(".pai_list").find(".prize");
+	var length=prizeList.length;
+	var widthHeight=2.0;
+	$(".bigbox").css({
+		"width":(widthHeight*3+0.2*2)+"rem",
+		"height":(widthHeight*Math.ceil(length/3)+0.2*(Math.ceil(length/3)-1))+"rem",
+		"position":"absolute",
+		"top":50+"%",
+		"left":50+"%",
+		"margin-top":-(widthHeight*3+0.2*2)/2+"rem",
+		"margin-left":-(widthHeight*Math.ceil(length/3)+0.2*(Math.ceil(length/3)-1))/2+"rem"
+	});
+	for(var i = 0; i < length; i++) {
+		prizeList[i].style.left =2.2*parseInt(i%3)+"rem";
+		prizeList[i].style.top =2.2*parseInt(i/3)+"rem";
+	}
+
+	var index;
+    var flag=true;
+	//点击奖品牌
+	prizeList.on("click",function(){
+		//生成大div
+		if(flag){
+			index=$(this).index();
+
+			var left=prizeList.eq(index).position().left;
+			var top=prizeList.eq(index).position().top;
+
+			var timeout;
+			clearTimeout(timeout);
+			var createDiv=document.createElement('div');
+			createDiv.className = 'scale';
+
+			createDiv.style.left=left+"px";
+			createDiv.style.top=top+"px";
+			createDiv.style.borderRadius=10+"px";
+			//隐藏所选奖品卡
+			//prizeList.eq(index).addClass("hide");
+			prizeList.eq(index).hide();
+
+			$(createDiv).append('<div class="rotate1"><h3></h3></div><div class="rotate2"></div>');
+			$(".bigbox").append(createDiv);
+            //抬起移动
+			$(".scale").addClass("translateZ");
+            //移到中心
+			$(".scale").delay(1000).animate({
+						left:"50%",
+						top:"50%",
+						marginTop:-1.00+"rem",
+						marginLeft:-1.00+"rem",
+			        	borderRadius: 10+"px"
+					},1500,"swing");
+            //放大
+			$(".scale").animate({
+				width:8.0+"rem",
+				height:5.0+"rem",
+				left:"50%",
+				top:"50%",
+				marginTop:-2.50+"rem",
+				marginLeft:-4.00+"rem",
+				borderRadius: 10+"px"
+			},1500,"linear",function(){
+				//旋转
+				$(this).addClass("rotateY");
+				//旋转完成后可以点击删除
+				timeout=setTimeout(function(){
+					createDiv.onclick=function(){
+						document.documentElement.getElementsByClassName("bigbox")[0].removeChild(createDiv);
+						//显示所选奖品卡
+						prizeList.eq(index).show(1500);
+						flag=true;
+					}
+				},2000)
+			});
+
+			console.log("点击");
+			//抽奖开始
+			/*ajax({
+				type: "post",
+				url: "/zqunguang/led_luckdraw",
+				data: {
+					activity_guid: "1"
+				},
+				contentType: "application/x-www-form-urlencoded",
+				success: function (res) {
+					console.log("抽奖:" + JSON.stringify(res));
+				}
+			});*/
+
+			flag=false;
+		}
+
+
+
+	});
+
+
+
+   /* $(".pai_list").find("li").hover(function(){
+		index=$(this).index();
+		//抽奖开始
+		ajax({
+			type: "post",
+			url: "/zqunguang/led_luckdraw",
+			data: {
+				activity_guid: "1"
+			},
+			contentType: "application/x-www-form-urlencoded",
+			success: function (res) {
+				console.log("抽奖:" + JSON.stringify(res));
+			}
+		});
+
+		$(this).addClass("rotate");
+
+	},function(){
+		$(".rotate2 h3").text("").removeClass("opacity");
+		$(this).removeClass("rotate")
+	});*/
+
+	var timer;
+	// 旋转结束后，允许再次触发
+	function callback(duringTime){
+		setTimeout(function(){
+			//抽奖完成接口调用
+			ajax({
+				type:"post",
+				url:"/zqunguang/led_timer_finish",
+				data:{
+					activity_guid:"1"
+				},
+				contentType:"application/x-www-form-urlencoded",
+				success:function(res){
+
+					setTimer();
+					console.log("LED抽奖动画完成调用:"+JSON.stringify(res));
+				}
+			});
+		},duringTime*1000);
+	}
+
+	$(document).ready(function(){
+
+		//先调用抽奖完成接口调用finish掉
+		/*ajax({
+			type:"post",
+			url:"/zqunguang/led_timer_finish",
+			data:{
+				activity_guid:"1"
+			},
+			contentType:"application/x-www-form-urlencoded",
+			success:function(res){
+				//console.log("先调用LED抽奖动画完成调用:"+JSON.stringify(res));
+			}
+		});*/
+
+		//再定时请求
+		//setTimer();
+	});
+	function setTimer(time) {
+		timer = setInterval(function() {
+			ajax({
+				type: "post",
+				url: "/zqunguang/led_timer",
+				data: {
+					activity_guid: "1"
+				},
+				contentType: "application/x-www-form-urlencoded",
+				success: function (res) {
+					console.log("LED定时获取抽奖信息:"+JSON.stringify(res));
+					//console.log(res.data.title);
+					//开始抽奖
+
+					if(res.data.isCan){
+						$(".scale").find(".rotate1").find("h3").text(res.data.title).addClass("opacity");
+						closeTimer();
+						callback(res,1);
+					}
+
+				}
+			});
+		},time?time:1000)
+	}
+	function closeTimer() {
+		clearInterval(timer)
+	}
+
+	</script>
+</body>
+</html>
